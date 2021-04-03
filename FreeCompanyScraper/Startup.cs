@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using LodestoneAPI.Services;
 
 namespace FreeCompanyScraper
 {
@@ -19,6 +20,8 @@ namespace FreeCompanyScraper
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddRazorPages();
+
+            services.AddTransient<LodestoneAPI.Services.ILodestoneAPI, LodestoneAPI.Services.LodestoneAPI>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
