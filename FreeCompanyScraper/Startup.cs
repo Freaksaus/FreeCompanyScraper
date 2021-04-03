@@ -22,9 +22,13 @@ namespace FreeCompanyScraper
             services.AddRazorPages();
 
             services.Configure<Scraper.Models.ScrapingOptions>(Configuration.GetSection(Scraper.Models.ScrapingOptions.Scraping));
+            services.Configure<LodestoneAPI.Models.APIOptions>(Configuration.GetSection(LodestoneAPI.Models.APIOptions.API));
 
             services.AddTransient<LodestoneAPI.Services.ILodestoneParser, LodestoneAPI.Services.LodestoneParser>();
             services.AddTransient<LodestoneAPI.Services.ILodestoneAPI, LodestoneAPI.Services.LodestoneAPI>();
+            services.AddTransient<Scraper.Services.ILodestoneScraper, Scraper.Services.LodestoneScraper>();
+
+            services.AddHostedService<Web.Services.ScraperHostedService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
