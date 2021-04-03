@@ -23,6 +23,7 @@ namespace FreeCompanyScraper
 
             services.Configure<Scraper.Models.ScrapingOptions>(Configuration.GetSection(Scraper.Models.ScrapingOptions.Scraping));
 
+            services.AddTransient<LodestoneAPI.Services.ILodestoneParser, LodestoneAPI.Services.LodestoneParser>();
             services.AddTransient<LodestoneAPI.Services.ILodestoneAPI, LodestoneAPI.Services.LodestoneAPI>();
         }
 
