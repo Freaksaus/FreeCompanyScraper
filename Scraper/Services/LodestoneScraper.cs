@@ -19,11 +19,11 @@ namespace Scraper.Services
 
         public async Task Run()
         {
-            foreach (var freecompany in _lodestoneAPI.GetFreeCompanies(_options.ServerName))
+            foreach (var freecompany in await _lodestoneAPI.GetFreeCompanies(_options.ServerName))
             {
-                foreach (var member in _lodestoneAPI.GetFreeCompanytMembers(freecompany.Id))
+                foreach (var member in await _lodestoneAPI.GetFreeCompanytMembers(freecompany.Id))
                 {
-                    var character = _lodestoneAPI.GetCharacter(member.Id);
+                    var character = await _lodestoneAPI.GetCharacter(member.Id);
                     Console.WriteLine($"{character.Name}: {character.Race}");
 
                     //Save to Database
