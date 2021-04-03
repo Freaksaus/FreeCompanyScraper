@@ -15,6 +15,9 @@ namespace LodestoneAPI.Services
 
         private const int MAX_PAGES = 20;
         private const int MAX_RESULTS_PER_PAGE = 50;
+        private const int MAX_TOTAL_RESULTS = 1000;
+
+        private readonly List<string> _searchList;
 
         public LodestoneAPI(ILodestoneParser lodestoneParser, IOptions<APIOptions> options)
         {
@@ -23,6 +26,12 @@ namespace LodestoneAPI.Services
 
             _client = new HttpClient();
             _client.DefaultRequestHeaders.Add("User-Agent", "Free Company Scraper");
+
+            _searchList = new List<string>();
+            for (char c = 'a'; c <= 'z'; c++)
+            {
+                _searchList.Add(c.ToString());
+            }
         }
 
         public async Task<Character> GetCharacter(string id)
@@ -33,21 +42,10 @@ namespace LodestoneAPI.Services
 
         public async Task<IEnumerable<FreeCompanyEntry>> GetFreeCompanies(string serverName)
         {
-            var result = new List<FreeCompanyEntry>();
-
             int page = 1;
-            var companies = await GetFreeCompaniesPerPage(serverName, page);
-            result.AddRange(companies);
+            var searchResult = await GetFreeCompaniesPerPage(serverName, "", page);
 
-
-            while (companies.Count == MAX_RESULTS_PER_PAGE && page < MAX_PAGES)
-            {
-                page++;
-                companies = await GetFreeCompaniesPerPage(serverName, page);
-                result.AddRange(companies);
-            }
-
-            return result;
+            return searchResult.FreeCompanies;
         }
 
         public async Task<IEnumerable<FreeCompanyMemberEntry>> GetFreeCompanyMembers(string id)
@@ -73,26 +71,55 @@ namespace LodestoneAPI.Services
             return result;
         }
 
-        private async Task<List<FreeCompanyEntry>> GetFreeCompaniesPerPage(string serverName, int page)
+        private async Task<FreeCompanySearchResult> GetFreeCompaniesPerPage(string serverName, string searchText, int page)
         {
-            var filename = $"Companies/{serverName}-{page}.html";
-            var url = $"https://na.finalfantasyxiv.com/lodestone/freecompany/?q=&worldname={serverName}&character_count=&activetime=&join=&house=&order=&page={page}";
+            var totalResult = new FreeCompanySearchResult()
+            {
+                FreeCompanies = new List<FreeCompanyEntry>(),
+                Page = page,
+                SearchText = searchText,
+                TotalResults = 0
+            };
+
+            Console.WriteLine($"Search companies with text: {searchText} and page {page}");
+
+            var filename = $"Companies/{serverName}/{searchText}-{page}.html";
+            var url = $"https://na.finalfantasyxiv.com/lodestone/freecompany/?q={searchText}&worldname={serverName}&character_count=&activetime=&join=&house=&order=&page={page}";
 
             var html = await GetHtml(url, filename);
             if(string.IsNullOrWhiteSpace(html))
             {
-                return null;
+                return totalResult;
             }
 
-            var result = await _lodestoneParser.ParseFreeCompanySearchPage(html);
-
-            if (result.Count == 0)
+            var pageResult = await _lodestoneParser.ParseFreeCompanySearchPage(html, searchText, page);
+            if (pageResult == null || pageResult.FreeCompanies == null || pageResult.FreeCompanies.Count == 0)
             {
-                //TODO: Refactor
                 System.IO.File.Delete(System.IO.Path.Combine(_options.CacheDirectory, filename));
             }
 
-            return result;
+            if(pageResult.TotalResults >= MAX_TOTAL_RESULTS)
+            {
+                foreach (var searchItem in _searchList)
+                {
+                    var tempPage = 1;
+                    var tempResult = await GetFreeCompaniesPerPage(serverName, $"{searchText}{searchItem}", tempPage);
+
+                    while (tempResult != null && tempResult.FreeCompanies.Count == MAX_RESULTS_PER_PAGE && tempPage < MAX_PAGES)
+                    {
+                        tempPage++;
+                        tempResult = await GetFreeCompaniesPerPage(serverName, $"{searchText}{searchItem}", tempPage);
+                        totalResult.FreeCompanies.AddRange(tempResult.FreeCompanies);
+                    }
+                }
+            }
+            else
+            {
+                totalResult.FreeCompanies.AddRange(pageResult.FreeCompanies);
+                totalResult.TotalResults += pageResult.TotalResults;
+            }
+
+            return totalResult;
         }
 
         private async Task<List<FreeCompanyMemberEntry>> GetFreeCompanyMembersPerPage(string id, int page)
@@ -150,7 +177,7 @@ namespace LodestoneAPI.Services
 
             if(!System.IO.File.Exists(path))
             {
-                System.Threading.Thread.Sleep(1000);
+                System.Threading.Thread.Sleep(2000);
                 try
                 {
                     var htmlResult = _client.GetStringAsync(url).Result;

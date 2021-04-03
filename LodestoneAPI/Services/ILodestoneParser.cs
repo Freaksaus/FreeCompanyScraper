@@ -5,7 +5,7 @@ namespace LodestoneAPI.Services
 {
     public interface ILodestoneParser
     {
-        Task<List<Models.FreeCompanyEntry>> ParseFreeCompanySearchPage(string html);
+        Task<Models.FreeCompanySearchResult> ParseFreeCompanySearchPage(string html, string searchText, int page);
         Task<List<Models.FreeCompanyMemberEntry>> ParseFreeCompanyMemberPage(string html, string freeCompanyId);
         Task<Models.Character> ParseCharacterPage(string html, string characterId);
     }

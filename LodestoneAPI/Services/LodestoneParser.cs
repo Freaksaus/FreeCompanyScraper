@@ -42,17 +42,31 @@ namespace LodestoneAPI.Services
             return Task.FromResult(result);
         }
 
-        public Task<List<Models.FreeCompanyEntry>> ParseFreeCompanySearchPage(string html)
+        public Task<Models.FreeCompanySearchResult> ParseFreeCompanySearchPage(string html, string searchText, int page)
         {
             var document = new HtmlDocument();
             document.LoadHtml(html);
 
-            var result = new List<Models.FreeCompanyEntry>();
+            var result = new Models.FreeCompanySearchResult()
+            {
+                SearchText = searchText,
+                Page = page,
+                FreeCompanies = new List<Models.FreeCompanyEntry>()
+            };
+
             var entries = document.DocumentNode.SelectNodes("//div[@class='entry']");
             if (entries == null || !entries.Any())
             {
                 return Task.FromResult(result);
             }
+
+            var totalResultsNode = document.DocumentNode.SelectSingleNode("//div[@class='parts__total']");
+            if (totalResultsNode == null)
+            {
+                return Task.FromResult(result);
+            }
+
+            result.TotalResults = Convert.ToInt32(totalResultsNode.InnerText.Replace("Total", ""));
 
             foreach (var entry in entries)
             {
@@ -68,7 +82,7 @@ namespace LodestoneAPI.Services
                     Name = name
                 };
 
-                result.Add(model);
+                result.FreeCompanies.Add(model);
             }
 
             return Task.FromResult(result);
