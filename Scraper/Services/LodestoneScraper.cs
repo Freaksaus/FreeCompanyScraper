@@ -21,7 +21,7 @@ namespace Scraper.Services
         {
             foreach (var freecompany in await _lodestoneAPI.GetFreeCompanies(_options.ServerName))
             {
-                foreach (var member in await _lodestoneAPI.GetFreeCompanytMembers(freecompany.Id))
+                foreach (var member in await _lodestoneAPI.GetFreeCompanyMembers(freecompany.Id))
                 {
                     var character = await _lodestoneAPI.GetCharacter(member.Id);
                     Console.WriteLine($"{character.Name}: {character.Race}");

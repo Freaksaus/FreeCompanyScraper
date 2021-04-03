@@ -6,10 +6,9 @@ using System.Threading.Tasks;
 
 namespace LodestoneAPI.Models
 {
-    public class FreeCompanyEntry
+    public class APIOptions
     {
-        public string Id { get; set; }
-
-        public string Name { get; set; }
+        public const string API = "API";
+        public string CacheDirectory { get; set; }
     }
 }

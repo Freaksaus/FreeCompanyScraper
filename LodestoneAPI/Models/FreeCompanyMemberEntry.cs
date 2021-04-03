@@ -8,9 +8,9 @@ namespace LodestoneAPI.Models
 {
     public class FreeCompanyMemberEntry
     {
-        public long Id { get; set; }
+        public string Id { get; set; }
         public string Name { get; set; }
 
-        public long FreeCompanyId { get; set; }
+        public string FreeCompanyId { get; set; }
     }
 }

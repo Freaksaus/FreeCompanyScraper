@@ -9,10 +9,8 @@ namespace LodestoneAPI.Services
     {
         public Task<IEnumerable<FreeCompanyEntry>> GetFreeCompanies(string serverName);
 
-        public Task<FreeCompany> GetFreeCompany(long id);
+        public Task<IEnumerable<FreeCompanyMemberEntry>> GetFreeCompanyMembers(string id);
 
-        public Task<IEnumerable<FreeCompanyMemberEntry>> GetFreeCompanytMembers(long id);
-
-        public Task<Character> GetCharacter(long id);
+        public Task<Character> GetCharacter(string id);
     }
 }
