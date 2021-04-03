@@ -86,16 +86,21 @@ namespace LodestoneAPI.Services
             var filename = $"Companies/{serverName}/{searchText}-{page}.html";
             var url = $"https://na.finalfantasyxiv.com/lodestone/freecompany/?q={searchText}&worldname={serverName}&character_count=&activetime=&join=&house=&order=&page={page}";
 
-            var html = await GetHtml(url, filename);
-            if(string.IsNullOrWhiteSpace(html))
+            Models.FreeCompanySearchResult pageResult = null;
+            while(pageResult == null)
             {
-                return totalResult;
-            }
+                var html = await GetHtml(url, filename);
+                if (string.IsNullOrWhiteSpace(html))
+                {
+                    return totalResult;
+                }
 
-            var pageResult = await _lodestoneParser.ParseFreeCompanySearchPage(html, searchText, page);
-            if (pageResult == null || pageResult.FreeCompanies == null || pageResult.FreeCompanies.Count == 0)
-            {
-                System.IO.File.Delete(System.IO.Path.Combine(_options.CacheDirectory, filename));
+                pageResult = await _lodestoneParser.ParseFreeCompanySearchPage(html, searchText, page);
+                if (pageResult == null)
+                {
+                    System.IO.File.Delete(System.IO.Path.Combine(_options.CacheDirectory, filename));
+                    System.Threading.Thread.Sleep(5000);
+                }
             }
 
             if(pageResult.TotalResults >= MAX_TOTAL_RESULTS)
