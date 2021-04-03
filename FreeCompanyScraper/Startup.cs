@@ -21,6 +21,8 @@ namespace FreeCompanyScraper
         {
             services.AddRazorPages();
 
+            services.Configure<Scraper.Models.ScrapingOptions>(Configuration.GetSection(Scraper.Models.ScrapingOptions.Scraping));
+
             services.AddTransient<LodestoneAPI.Services.ILodestoneAPI, LodestoneAPI.Services.LodestoneAPI>();
         }
 
