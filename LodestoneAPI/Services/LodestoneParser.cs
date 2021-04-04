@@ -129,6 +129,11 @@ namespace LodestoneAPI.Services
 
         private string GetIdFromNode(HtmlNode node)
         {
+            if(node == null)
+            {
+                return null;
+            }
+
             var url = node.Attributes["href"].Value;
             var parts = url.Split(@"/");
             var id = parts[parts.Length - 2].Trim();
