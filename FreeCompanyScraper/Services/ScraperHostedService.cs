@@ -10,6 +10,7 @@ namespace Web.Services
     public class ScraperHostedService : BackgroundService
     {
         private readonly Scraper.Services.ILodestoneScraper _lodestoneScraper;
+        private bool _running = false;
        
         public ScraperHostedService(Scraper.Services.ILodestoneScraper lodestoneScraper)
         {
@@ -20,7 +21,12 @@ namespace Web.Services
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                await _lodestoneScraper.Run();
+                if (!_running)
+                {
+                    _running = true;
+                    await _lodestoneScraper.Run();
+                    _running = false;
+                }
                 await Task.Delay(86400000, stoppingToken);
             }
         }
