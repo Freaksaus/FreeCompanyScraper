@@ -9,6 +9,8 @@ namespace LodestoneAPI.Services
 {
     public class LodestoneParser : ILodestoneParser
     {
+        private System.Text.RegularExpressions.Regex _dateTimeRegex = new System.Text.RegularExpressions.Regex(@"ldst_strftime\(([0-9]+)");
+
         public Task<List<Models.FreeCompanyMemberEntry>> ParseFreeCompanyMemberPage(string html, string freeCompanyId)
         {
             var document = new HtmlDocument();
@@ -33,7 +35,7 @@ namespace LodestoneAPI.Services
                 {
                     Id = memberCharacterId,
                     Name = name,
-                    FreeCompanyId = freeCompanyId
+                    FreeCompanyId = freeCompanyId,
                 };
 
                 result.Add(model);
@@ -76,10 +78,29 @@ namespace LodestoneAPI.Services
                 var nameElement = linkNode.SelectSingleNode("div/div/p[@class='entry__name']");
                 var name = System.Web.HttpUtility.HtmlDecode(nameElement.InnerText);
 
+                var memberCountElement = linkNode.SelectSingleNode("ul/li[@class='entry__freecompany__fc-member']");
+                var memberCount = 0;
+
+                if(memberCountElement != null)
+                {
+                    memberCount = Convert.ToInt32(memberCountElement.InnerHtml.Trim());
+                }
+
+                var dateCreatedElement = linkNode.SelectSingleNode("ul/li[@class='entry__freecompany__fc-day']/script");
+                var dateCreated = DateTime.MinValue;
+
+                if(dateCreatedElement != null && _dateTimeRegex.IsMatch(dateCreatedElement.InnerText))
+                {
+                    var timespan = _dateTimeRegex.Match(dateCreatedElement.InnerText).Groups[1].Value;
+                    dateCreated = DateTimeOffset.FromUnixTimeSeconds(Convert.ToInt64(timespan)).DateTime;
+                }
+
                 var model = new Models.FreeCompanyEntry()
                 {
+                    DateCreated = dateCreated,
                     Id = freeCompanyId,
-                    Name = name
+                    MemberCount = memberCount,
+                    Name = name,
                 };
 
                 result.FreeCompanies.Add(model);
@@ -114,6 +135,9 @@ namespace LodestoneAPI.Services
             var freeCompanyLinkNode = document.DocumentNode.SelectSingleNode("//div[@class='character__freecompany__name']/h4/a");
             var freeCompanyId = GetIdFromNode(freeCompanyLinkNode);
 
+            var characterClassNodes = document.DocumentNode.SelectNodes("//div[@class='character__level__list']/ul/li");
+            var highestLevel = characterClassNodes?.Where(c => c.InnerText != "-").Max(c => Convert.ToInt32(c.InnerText)) ?? 0; 
+
             var result = new Models.Character()
             {
                 Id = characterId,
@@ -121,6 +145,7 @@ namespace LodestoneAPI.Services
                 Clan = clan,
                 FreeCompanyId = freeCompanyId,
                 Gender = gender,
+                HighestLevel = highestLevel,
                 Race = race,
             };
 

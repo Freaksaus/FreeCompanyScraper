@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using LodestoneAPI.Services;
+using Microsoft.EntityFrameworkCore;
 
 namespace FreeCompanyScraper
 {
@@ -28,7 +29,13 @@ namespace FreeCompanyScraper
             services.AddTransient<LodestoneAPI.Services.ILodestoneAPI, LodestoneAPI.Services.LodestoneAPI>();
             services.AddTransient<Scraper.Services.ILodestoneScraper, Scraper.Services.LodestoneScraper>();
 
+            services.AddTransient<Data.Services.Services.IFreeCompanyService, Data.Services.Services.FreeCompanyService>();
+            services.AddTransient<Data.Services.Services.ICharacterService, Data.Services.Services.CharacterService>();
+
             services.AddHostedService<Web.Services.ScraperHostedService>();
+
+            services.AddDbContext<Data.Models.LodestoneContext>(options =>
+                options.UseSqlite("DataSource=app.db"));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

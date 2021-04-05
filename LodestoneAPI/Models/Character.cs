@@ -14,5 +14,6 @@ namespace LodestoneAPI.Models
         public Clan Clan { get; set; }
         public Gender Gender { get; set; }
         public string FreeCompanyId { get; set; }
+        public int HighestLevel { get; set; }
     }
 }

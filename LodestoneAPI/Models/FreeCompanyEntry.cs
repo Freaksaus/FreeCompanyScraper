@@ -9,7 +9,9 @@ namespace LodestoneAPI.Models
     public class FreeCompanyEntry
     {
         public string Id { get; set; }
-
         public string Name { get; set; }
+        public DateTime DateCreated { get; set; }
+        public int MemberCount { get; set; }
+
     }
 }

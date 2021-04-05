@@ -10,10 +10,17 @@ namespace Scraper.Services
     public class LodestoneScraper : ILodestoneScraper
     {
         private readonly LodestoneAPI.Services.ILodestoneAPI _lodestoneAPI;
+        private readonly Data.Services.Services.IFreeCompanyService _freeCompanyService;
+        private readonly Data.Services.Services.ICharacterService _characterService;
         private readonly Models.ScrapingOptions _options;
-        public LodestoneScraper(LodestoneAPI.Services.ILodestoneAPI lodestoneAPI, IOptions<Models.ScrapingOptions> options)
+        public LodestoneScraper(LodestoneAPI.Services.ILodestoneAPI lodestoneAPI,
+            Data.Services.Services.IFreeCompanyService freeCompanyService,
+            Data.Services.Services.ICharacterService characterService,
+            IOptions<Models.ScrapingOptions> options)
         {
             _lodestoneAPI = lodestoneAPI ?? throw new ArgumentException(nameof(lodestoneAPI));
+            _freeCompanyService = freeCompanyService ?? throw new ArgumentException(nameof(freeCompanyService));
+            _characterService = characterService ?? throw new ArgumentException(nameof(characterService));
             _options = options.Value ?? throw new ArgumentException(nameof(options));
         }
 
@@ -21,14 +28,41 @@ namespace Scraper.Services
         {
             foreach (var freecompany in await _lodestoneAPI.GetFreeCompanies(_options.ServerName))
             {
+                _freeCompanyService.Add(ConvertToModel(freecompany));
+
                 foreach (var member in await _lodestoneAPI.GetFreeCompanyMembers(freecompany.Id))
                 {
                     var character = await _lodestoneAPI.GetCharacter(member.Id);
-                    Console.WriteLine($"{character.Name}: {character.Race}");
-
-                    //Save to Database
+                    _characterService.Add(ConvertToModel(character));
                 }
             }
+        }
+
+        private Domain.Models.FreeCompany ConvertToModel(LodestoneAPI.Models.FreeCompanyEntry freeCompany)
+        {
+            return new Domain.Models.FreeCompany()
+            {
+                DateCreated = freeCompany.DateCreated,
+                DateScraped = DateTime.Now,
+                Id = freeCompany.Id,
+                MemberCount = freeCompany.MemberCount,
+                Name = freeCompany.Name,
+            };
+        }
+
+        private Domain.Models.Character ConvertToModel(LodestoneAPI.Models.Character character)
+        {
+            return new Domain.Models.Character()
+            {
+                Clan = (int)character.Clan,
+                DateScraped = DateTime.Now,
+                FreeCompanyId = character.FreeCompanyId,
+                Gender = (int)character.Gender,
+                HighestLevel = character.HighestLevel,
+                Id = character.Id,
+                Name = character.Name,
+                Race = (int)character.Race
+            };
         }
     }
 }
