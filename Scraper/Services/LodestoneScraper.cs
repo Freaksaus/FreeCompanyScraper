@@ -26,8 +26,8 @@ namespace Scraper.Services
 
         public async Task Run()
         {
-            var addedCompanies = new HashSet<string>();
-            var addedCharacters = new HashSet<string>();
+            var addedCompanies = _freeCompanyService.Get().Select(f => f.Id).ToHashSet();
+            var addedCharacters = _characterService.Get().Select(f => f.Id).ToHashSet();
             foreach (var freecompany in await _lodestoneAPI.GetFreeCompanies(_options.ServerName))
             {
                 if(!addedCompanies.Contains(freecompany.Id))
