@@ -22,7 +22,15 @@ namespace Data.Services.Services
 
             var entity = ConvertToDataModel(character);
             _db.Characters.Add(entity);
-            _db.SaveChanges();
+
+            try
+            {
+                _db.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                var test = "";
+            }
         }
 
         public Domain.Models.Character Get(string id)
@@ -38,7 +46,7 @@ namespace Data.Services.Services
                     select ConvertToDomainModel(f)).ToList();
         }
 
-        private Domain.Models.Character ConvertToDomainModel(Data.Models.Character character)
+        private static Domain.Models.Character ConvertToDomainModel(Data.Models.Character character)
         {
             return new Domain.Models.Character()
             {
@@ -53,7 +61,7 @@ namespace Data.Services.Services
             };
         }
 
-        private Data.Models.Character ConvertToDataModel(Domain.Models.Character character)
+        private static Data.Models.Character ConvertToDataModel(Domain.Models.Character character)
         {
             return new Data.Models.Character()
             {

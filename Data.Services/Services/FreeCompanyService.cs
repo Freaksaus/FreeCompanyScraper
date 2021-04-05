@@ -22,7 +22,15 @@ namespace Data.Services.Services
 
             var entity = ConvertToDataModel(freeCompany);
             _db.FreeCompanies.Add(entity);
-            _db.SaveChanges();
+
+            try
+            {
+                _db.SaveChanges();
+            }
+            catch(Exception ex)
+            {
+                var test = "";
+            }
         }
 
         public Domain.Models.FreeCompany Get(string id)
@@ -38,7 +46,7 @@ namespace Data.Services.Services
                     select ConvertToDomainModel(f)).ToList();
         }
 
-        private Domain.Models.FreeCompany ConvertToDomainModel(Data.Models.FreeCompany freeCompany)
+        private static Domain.Models.FreeCompany ConvertToDomainModel(Data.Models.FreeCompany freeCompany)
         {
             return new Domain.Models.FreeCompany()
             {
@@ -50,7 +58,7 @@ namespace Data.Services.Services
             };
         }
 
-        private Data.Models.FreeCompany ConvertToDataModel(Domain.Models.FreeCompany freeCompany)
+        private static Data.Models.FreeCompany ConvertToDataModel(Domain.Models.FreeCompany freeCompany)
         {
             return new Data.Models.FreeCompany()
             {
