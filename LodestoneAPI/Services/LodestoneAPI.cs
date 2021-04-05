@@ -87,9 +87,12 @@ namespace LodestoneAPI.Services
             var url = $"https://na.finalfantasyxiv.com/lodestone/freecompany/?q={searchText}&worldname={serverName}&character_count=&activetime=&join=&house=&order=&page={page}";
 
             Models.FreeCompanySearchResult pageResult = null;
-            while(pageResult == null)
+            int downloadCount = 0;
+            while(pageResult == null && downloadCount < 3)
             {
                 var html = await GetHtml(url, filename);
+                downloadCount++;
+
                 if (string.IsNullOrWhiteSpace(html))
                 {
                     return totalResult;
@@ -103,14 +106,20 @@ namespace LodestoneAPI.Services
                 }
             }
 
-            if(pageResult.TotalResults >= MAX_TOTAL_RESULTS)
+            if(pageResult == null)
+            {
+                return totalResult;
+            }
+
+            if (pageResult.TotalResults >= MAX_TOTAL_RESULTS)
             {
                 foreach (var searchItem in _searchList)
                 {
                     var tempPage = 1;
                     var tempResult = await GetFreeCompaniesPerPage(serverName, $"{searchText}{searchItem}", tempPage);
+                    var totalPages = Math.Ceiling((decimal)tempResult.TotalResults / MAX_RESULTS_PER_PAGE);
 
-                    while (tempResult != null && tempResult.FreeCompanies.Count == MAX_RESULTS_PER_PAGE && tempPage < MAX_PAGES)
+                    while (tempResult != null && tempResult.FreeCompanies.Count == MAX_RESULTS_PER_PAGE && tempPage < totalPages && tempPage < MAX_PAGES)
                     {
                         tempPage++;
                         tempResult = await GetFreeCompaniesPerPage(serverName, $"{searchText}{searchItem}", tempPage);
