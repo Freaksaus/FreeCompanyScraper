@@ -51,24 +51,41 @@ namespace LodestoneAPI.Services
 
             var result = new Models.FreeCompanySearchResult()
             {
-                SearchText = searchText,
                 Page = page,
-                FreeCompanies = new List<Models.FreeCompanyEntry>()
+                SearchText = searchText,
+                FreeCompanies = new List<Models.FreeCompanyEntry>(),
+                TotalResults = 0
             };
+
+            var emptyElement = document.DocumentNode.SelectSingleNode("//p[@class='parts__zero']");
+            if(emptyElement != null)
+            {
+                result = null;
+                return Task.FromResult(result);
+            }
 
             var entries = document.DocumentNode.SelectNodes("//div[@class='entry']");
             if (entries == null || !entries.Any())
             {
+                result = null;
                 return Task.FromResult(result);
             }
 
             var totalResultsNode = document.DocumentNode.SelectSingleNode("//div[@class='parts__total']");
             if (totalResultsNode == null)
             {
+                result = null;
                 return Task.FromResult(result);
             }
+            var totalResults = Convert.ToInt32(totalResultsNode.InnerText.Replace("Total", ""));
 
-            result.TotalResults = Convert.ToInt32(totalResultsNode.InnerText.Replace("Total", ""));
+            result = new Models.FreeCompanySearchResult()
+            {
+                SearchText = searchText,
+                Page = page,
+                FreeCompanies = new List<Models.FreeCompanyEntry>(),
+                TotalResults = totalResults
+            };
 
             foreach (var entry in entries)
             {
