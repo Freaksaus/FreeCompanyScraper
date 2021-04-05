@@ -26,14 +26,24 @@ namespace Scraper.Services
 
         public async Task Run()
         {
+            var addedCompanies = new HashSet<string>();
+            var addedCharacters = new HashSet<string>();
             foreach (var freecompany in await _lodestoneAPI.GetFreeCompanies(_options.ServerName))
             {
-                _freeCompanyService.Add(ConvertToModel(freecompany));
+                if(!addedCompanies.Contains(freecompany.Id))
+                {
+                    _freeCompanyService.Add(ConvertToModel(freecompany));
+                    addedCompanies.Add(freecompany.Id);
+                }
 
                 foreach (var member in await _lodestoneAPI.GetFreeCompanyMembers(freecompany.Id))
                 {
-                    var character = await _lodestoneAPI.GetCharacter(member.Id);
-                    _characterService.Add(ConvertToModel(character));
+                    if (!addedCharacters.Contains(member.Id))
+                    {
+                        var character = await _lodestoneAPI.GetCharacter(member.Id);
+                        _characterService.Add(ConvertToModel(character));
+                        addedCharacters.Add(member.Id);
+                    }
                 }
             }
         }
@@ -56,7 +66,7 @@ namespace Scraper.Services
             {
                 Clan = (int)character.Clan,
                 DateScraped = DateTime.Now,
-                FreeCompanyId = character.FreeCompanyId,
+                FreeCompanyId = character.FreeCompanyId ?? "",
                 Gender = (int)character.Gender,
                 HighestLevel = character.HighestLevel,
                 Id = character.Id,
