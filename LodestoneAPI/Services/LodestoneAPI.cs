@@ -102,7 +102,6 @@ namespace LodestoneAPI.Services
                 if (pageResult == null)
                 {
                     System.IO.File.Delete(System.IO.Path.Combine(_options.CacheDirectory, filename));
-                    System.Threading.Thread.Sleep(5000);
                 }
             }
 
@@ -117,6 +116,8 @@ namespace LodestoneAPI.Services
                 {
                     var tempPage = 1;
                     var tempResult = await GetFreeCompaniesPerPage(serverName, $"{searchText}{searchItem}", tempPage);
+
+                    totalResult.FreeCompanies.AddRange(tempResult.FreeCompanies);
                     var totalPages = Math.Ceiling((decimal)tempResult.TotalResults / MAX_RESULTS_PER_PAGE);
 
                     while (tempResult != null && tempResult.FreeCompanies.Count == MAX_RESULTS_PER_PAGE && tempPage < totalPages && tempPage < MAX_PAGES)
