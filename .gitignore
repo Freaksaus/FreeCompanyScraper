@@ -333,3 +333,4 @@ ASALocalRun/
 # Local History for Visual Studio
 .localhistory/
 FreeCompanyScraper/appsettings.Development.json
+FreeCompanyScraper/app.db
