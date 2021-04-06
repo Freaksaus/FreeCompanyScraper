@@ -126,6 +126,65 @@ namespace LodestoneAPI.Services
             return Task.FromResult(result);
         }
 
+        public Task<Models.FreeCompany> ParseFreeCompanyPage(string html, string freeCompanyId)
+        {
+            var document = new HtmlDocument();
+            document.LoadHtml(html);
+
+            var dateCreated = DateTime.MinValue;
+            var dateCreatedLabelNode = document.DocumentNode.SelectSingleNode("//h3[@class='heading--lead' and text() = 'Formed']");
+            if (dateCreatedLabelNode != null && dateCreatedLabelNode.NextSibling.NextSibling != null)
+            {
+                var dateCreatedElement = dateCreatedLabelNode.NextSibling.NextSibling.SelectSingleNode("script");
+                if (dateCreatedElement != null && _dateTimeRegex.IsMatch(dateCreatedElement.InnerText))
+                {
+                    var timespan = _dateTimeRegex.Match(dateCreatedElement.InnerText).Groups[1].Value;
+                    dateCreated = DateTimeOffset.FromUnixTimeSeconds(Convert.ToInt64(timespan)).DateTime;
+                }
+            }
+
+
+            var estateAddress = "";
+            var estateAddressNode = document.DocumentNode.SelectSingleNode("//p[@class='freecompany__estate__text']");
+            if (estateAddressNode != null)
+            {
+                estateAddress = System.Web.HttpUtility.HtmlDecode(estateAddressNode.InnerText);
+            }
+
+            var estateName = "";
+            var estateNameNode = document.DocumentNode.SelectSingleNode("//p[@class='freecompany__estate__name']");
+            if(estateNameNode != null)
+            {
+                estateName = System.Web.HttpUtility.HtmlDecode(estateNameNode.InnerText);
+            }
+
+            var memberCount = 0;
+            var memberCountLabelNode = document.DocumentNode.SelectSingleNode("//h3[@class='heading--lead' and text() = 'Active Members']");
+            if(memberCountLabelNode != null && memberCountLabelNode.NextSibling.NextSibling != null)
+            {
+                memberCount = Convert.ToInt32(memberCountLabelNode.NextSibling.NextSibling.InnerText);
+            }
+
+            var nameNode = document.DocumentNode.SelectSingleNode("//p[@class='entry__freecompany__name']");
+            var name = System.Web.HttpUtility.HtmlDecode(nameNode.InnerText);
+
+            var tagNode = document.DocumentNode.SelectSingleNode("//p[@class='freecompany__text freecompany__text__tag']");
+            var tag = System.Web.HttpUtility.HtmlDecode(tagNode.InnerText.Replace("&laquo;", "").Replace("&raquo;", ""));
+
+            var result = new Models.FreeCompany()
+            {
+                DateCreated = dateCreated,
+                EstateAddress = estateAddress,
+                EstateName = estateName,
+                MemberCount = memberCount,
+                Id = freeCompanyId,
+                Name = name,
+                Tag = tag
+            };
+
+            return Task.FromResult(result);
+        }
+
         public Task<Models.Character> ParseCharacterPage(string html, string characterId)
         {
             var document = new HtmlDocument();

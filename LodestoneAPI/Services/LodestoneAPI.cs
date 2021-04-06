@@ -48,6 +48,12 @@ namespace LodestoneAPI.Services
             return searchResult.FreeCompanies;
         }
 
+        public async Task<FreeCompany> GetFreeCompany(string id)
+        {
+            var result = await GetFreeCompanyPage(id);
+            return result;
+        }
+
         public async Task<IEnumerable<FreeCompanyMemberEntry>> GetFreeCompanyMembers(string id)
         {
             var result = new List<FreeCompanyMemberEntry>();
@@ -135,6 +141,28 @@ namespace LodestoneAPI.Services
             }
 
             return totalResult;
+        }
+
+        private async Task<FreeCompany> GetFreeCompanyPage(string id)
+        {
+            var filename = $"FreeCompanies/{id}.html";
+            var url = $"https://na.finalfantasyxiv.com/lodestone/freecompany/{id}/";
+
+            var html = await GetHtml(url, filename);
+            if (string.IsNullOrWhiteSpace(html))
+            {
+                return null;
+            }
+
+            var result = await _lodestoneParser.ParseFreeCompanyPage(html, id);
+
+            if (result == null)
+            {
+                //TODO: Refactor
+                System.IO.File.Delete(System.IO.Path.Combine(_options.CacheDirectory, filename));
+            }
+
+            return result;
         }
 
         private async Task<List<FreeCompanyMemberEntry>> GetFreeCompanyMembersPerPage(string id, int page)

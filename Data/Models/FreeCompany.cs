@@ -19,6 +19,15 @@ namespace Data.Models
         [Required]
         public int MemberCount { get; set; }
         [Required]
+        [MaxLength(10)]
+        public string Tag { get; set; }
+        [Required]
+        [MaxLength(200)]
+        public string EstateName { get; set; }
+        [Required]
+        [MaxLength(40)]
+        public string EstateAddress { get; set; }
+        [Required]
         public DateTime DateCreated { get; set; }
         [Required]
         public DateTime DateScraped { get; set; }

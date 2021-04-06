@@ -32,15 +32,21 @@ namespace Data.Services.Services
                 throw new ArgumentException(nameof(freeCompany));
             }
 
-            var record = Get(freeCompany.Id);
+            var record = (from f in _db.FreeCompanies
+                          where f.Id == freeCompany.Id
+                          select f).SingleOrDefault();
+
             if (record == null)
             {
                 throw new ArgumentException(nameof(freeCompany));
             }
 
+            record.EstateAddress = freeCompany.EstateAddress;
+            record.EstateName = freeCompany.EstateName;
             record.MemberCount = freeCompany.MemberCount;
             record.Name = freeCompany.Name;
             record.DateScraped = freeCompany.DateScraped;
+            record.Tag = freeCompany.Tag;
 
             _db.SaveChanges();
         }
@@ -64,9 +70,12 @@ namespace Data.Services.Services
             {
                 DateCreated = freeCompany.DateCreated,
                 DateScraped = freeCompany.DateScraped,
+                EstateAddress = freeCompany.EstateAddress,
+                EstateName = freeCompany.EstateName,
                 Id = freeCompany.Id,
                 MemberCount = freeCompany.MemberCount,
-                Name = freeCompany.Name
+                Name = freeCompany.Name,
+                Tag = freeCompany.Tag
             };
         }
 
@@ -76,9 +85,12 @@ namespace Data.Services.Services
             {
                 DateCreated = freeCompany.DateCreated,
                 DateScraped = freeCompany.DateScraped,
+                EstateAddress = freeCompany.EstateAddress,
+                EstateName = freeCompany.EstateName,
                 Id = freeCompany.Id,
                 MemberCount = freeCompany.MemberCount,
-                Name = freeCompany.Name
+                Name = freeCompany.Name,
+                Tag = freeCompany.Tag
             };
         }
     }

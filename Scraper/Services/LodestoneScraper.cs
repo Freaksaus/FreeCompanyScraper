@@ -26,17 +26,25 @@ namespace Scraper.Services
 
         public async Task Run()
         {
-            var addedCompanies = _freeCompanyService.Get().Select(f => f.Id).ToHashSet();
+            var addedFreeCompanies = _freeCompanyService.Get().Select(f => f.Id).ToHashSet();
             var addedCharacters = _characterService.Get().Select(f => f.Id).ToHashSet();
-            foreach (var freecompany in await _lodestoneAPI.GetFreeCompanies(_options.ServerName))
-            {
-                if(!addedCompanies.Contains(freecompany.Id))
-                {
-                    _freeCompanyService.Add(ConvertToModel(freecompany));
-                    addedCompanies.Add(freecompany.Id);
-                }
 
-                foreach (var member in await _lodestoneAPI.GetFreeCompanyMembers(freecompany.Id))
+            //var freeCompanies = await _lodestoneAPI.GetFreeCompanies(_options.ServerName);
+            foreach (var freecompanyEntry in _freeCompanyService.Get())
+            {
+                var freeCompany = await _lodestoneAPI.GetFreeCompany(freecompanyEntry.Id);
+                if (!addedFreeCompanies.Contains(freeCompany.Id))
+                {
+                    _freeCompanyService.Add(ConvertToModel(freeCompany));
+                    addedFreeCompanies.Add(freeCompany.Id);
+                }
+                else
+                {
+                    _freeCompanyService.Update(ConvertToModel(freeCompany));
+                }    
+
+                var members = await _lodestoneAPI.GetFreeCompanyMembers(freeCompany.Id);
+                foreach (var member in members)
                 {
                     if (!addedCharacters.Contains(member.Id))
                     {
@@ -48,15 +56,18 @@ namespace Scraper.Services
             }
         }
 
-        private Domain.Models.FreeCompany ConvertToModel(LodestoneAPI.Models.FreeCompanyEntry freeCompany)
+        private Domain.Models.FreeCompany ConvertToModel(LodestoneAPI.Models.FreeCompany freeCompany)
         {
             return new Domain.Models.FreeCompany()
             {
                 DateCreated = freeCompany.DateCreated,
                 DateScraped = DateTime.Now,
+                EstateAddress = freeCompany.EstateAddress,
+                EstateName = freeCompany.EstateName,
                 Id = freeCompany.Id,
                 MemberCount = freeCompany.MemberCount,
                 Name = freeCompany.Name,
+                Tag = freeCompany.Tag
             };
         }
 
