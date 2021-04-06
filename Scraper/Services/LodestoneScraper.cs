@@ -33,6 +33,10 @@ namespace Scraper.Services
             foreach (var freecompanyEntry in _freeCompanyService.Get())
             {
                 var freeCompany = await _lodestoneAPI.GetFreeCompany(freecompanyEntry.Id);
+                if(freeCompany == null)
+                {
+                    continue;
+                }
                 if (!addedFreeCompanies.Contains(freeCompany.Id))
                 {
                     _freeCompanyService.Add(ConvertToModel(freeCompany));
@@ -49,8 +53,11 @@ namespace Scraper.Services
                     if (!addedCharacters.Contains(member.Id))
                     {
                         var character = await _lodestoneAPI.GetCharacter(member.Id);
-                        _characterService.Add(ConvertToModel(character));
-                        addedCharacters.Add(member.Id);
+                        if (character != null)
+                        {
+                            _characterService.Add(ConvertToModel(character));
+                            addedCharacters.Add(member.Id);
+                        }
                     }
                 }
             }
