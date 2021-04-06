@@ -22,15 +22,27 @@ namespace Data.Services.Services
 
             var entity = ConvertToDataModel(freeCompany);
             _db.FreeCompanies.Add(entity);
+            _db.SaveChanges();
+        }
 
-            try
+        public void Update(Domain.Models.FreeCompany freeCompany)
+        {
+            if (freeCompany == null)
             {
-                _db.SaveChanges();
+                throw new ArgumentException(nameof(freeCompany));
             }
-            catch(Exception ex)
+
+            var record = Get(freeCompany.Id);
+            if (record == null)
             {
-                var test = "";
+                throw new ArgumentException(nameof(freeCompany));
             }
+
+            record.MemberCount = freeCompany.MemberCount;
+            record.Name = freeCompany.Name;
+            record.DateScraped = freeCompany.DateScraped;
+
+            _db.SaveChanges();
         }
 
         public Domain.Models.FreeCompany Get(string id)

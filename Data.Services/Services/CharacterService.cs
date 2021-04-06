@@ -22,15 +22,7 @@ namespace Data.Services.Services
 
             var entity = ConvertToDataModel(character);
             _db.Characters.Add(entity);
-
-            try
-            {
-                _db.SaveChanges();
-            }
-            catch (Exception ex)
-            {
-                var test = "";
-            }
+            _db.SaveChanges();
         }
 
         public Domain.Models.Character Get(string id)
